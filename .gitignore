@@ -1,0 +1,11 @@
+# object files
+*.o
+
+# final executable
+compiler
+
+# lex files
+lex.*
+
+# examples
+ex/*

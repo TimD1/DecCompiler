@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "code.h"
 
-int assembly_label_num = 1;
-FILE *outfile;
+#include "y.tab.h"
+
+int label = 1;
 
 %}
 
@@ -39,27 +39,44 @@ endline			[\r\n]
  /* tokens */
 {right}			{
 					fprintf(stderr, " [RIGHT]");
+					yylval.sval = strdup("right");
+					return RIGHT;
 				}
 {left}			{
 					fprintf(stderr, " [LEFT]");
+					yylval.sval = strdup("left");
+					return LEFT;
 				}
 {add}			{
 					fprintf(stderr, " [ADD]");
+					yylval.sval = strdup("add");
+					return ADD;
 				}
 {sub}			{
 					fprintf(stderr, " [SUB]");
+					yylval.sval = strdup("sub");
+					return SUB;
 				}
 {out}			{
 					fprintf(stderr, " [OUT]");
+					yylval.sval = strdup("out");
+					return OUT;
 				}
 {in}			{
 					fprintf(stderr, " [IN]");
+					yylval.sval = strdup("in");
+					return IN;
 				}
 {start}			{
 					fprintf(stderr, " [START LOOP]");
+					yylval.ival = label;
+					label += 2;
+					return START;
 				}
 {end}			{
 					fprintf(stderr, " [END LOOP]");
+					yylval.sval = strdup("end");
+					return END;
 				}
 
  /* ignore whitespace and set default */
@@ -72,39 +89,3 @@ endline			[\r\n]
 				}
 
 %%
-
-void yyerror(char* str)
-{
-	fprintf(stderr, "\nERROR, LINE %d: %s\n", yylineno, str);
-	exit(0);
-}
-
-int yywrap() { return 1; }
-
-int main(int argc, char** argv)
-{
-	// user must enter single file name
-	if(argc != 2) { yyerror("user must enter a single file name"); }
-
-	// try to open file
-	FILE *infile = fopen(argv[1], "r");
-	if(!infile) { yyerror("invalid input file name given"); }
-
-	// create output assembly file
-	char* outfile_name = (char*)malloc(strlen(argv[1])-1);
-	strncpy(outfile_name, (char*)argv[1], strlen(argv[1])-1);
-	outfile_name[strlen(outfile_name)-1] = 's'; //assembly file
-	outfile = fopen(outfile_name, "w");
-
-	// parse input file
-	yyin = infile;
-	file_header(argv[1]);
-	fprintf( stderr, "%d ", yylineno );
-	do { yylex(); }
-		while (!feof(yyin));
-	file_footer();
-
-	// clean up
-	fclose(infile);
-	fclose(outfile);
-}

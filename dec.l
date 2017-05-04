@@ -38,14 +38,19 @@ endline			[\r\n]
 							fprintf(stderr, " {COMMENT:");
 						}
 <COMMENT1>[^1] 			{
-							if(prev)
+							if(yytext[0] >= '0' && yytext[0] <= '9')
 							{
-								fprintf(stderr, "%c", 
-									(char)((prev-'0')*10 + (yytext[0]-'0')));
-								prev = 0;
+								if(prev)
+								{
+									fprintf(stderr, "%c", 
+										(char)((prev-'0')*10 + (yytext[0]-'0')));
+									prev = 0;
+								}
+								else
+									prev = yytext[0];
 							}
 							else
-								prev = yytext[0];
+								fprintf(stderr, "%c", yytext[0]);
 						}
 <COMMENT1>{end_comment}	{ fprintf(stderr, "}\n"); BEGIN INITIAL; }
 
@@ -94,9 +99,7 @@ endline			[\r\n]
 
  /* ignore whitespace and set default */
 {whitespace} 	{ ; }
-{endline} 		{
-					fprintf( stderr, "\n%d ", yylineno );
-				}
+{endline} 		{ ; }
 .				{
 					fprintf( stderr, " {%c}", yytext[0] );
 				}

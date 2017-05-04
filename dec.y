@@ -36,11 +36,13 @@ int main(int argc, char** argv)
 
 	// parse input file
 	yyin = infile;
+	fprintf(stderr, "\n");
 	file_header(argv[1]);
 	add_io_code();
 	main_header();
 	do { yyparse(); }
 		while (!feof(yyin));
+	fprintf(stderr, "\n\n");
 	main_footer();
 	file_footer();
 

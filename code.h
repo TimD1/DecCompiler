@@ -1,7 +1,7 @@
 #ifndef _CODE_H_
 #define _CODE_H_
 
-#define CODE_DEBUG 1
+#define CODE_DEBUG 0
 #define MAX_BYTES 1000
 
 void file_header(char* filename);

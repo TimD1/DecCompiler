@@ -10,16 +10,16 @@ int label = 1;
 %}
 
  /* valid symbols */
-right			">"
-left			"<"
-add				"+"
-sub				"-"
-out				"."
-in				","
-start			"["
-end				"]"
-start_comment	"{"
-end_comment		"}"
+start_comment	"0"
+end_comment		"1"
+right			"2"
+left			"3"
+add				"4"
+sub				"5"
+out				"6"
+in				"7"
+start			"8"
+end				"9"
 whitespace		[ \t]+
 endline			[\r\n]
 
@@ -33,7 +33,7 @@ endline			[\r\n]
 
  /* detect comment states */
 {start_comment}			{ BEGIN COMMENT1; }
-<COMMENT1>[^}] 			{ ; }
+<COMMENT1>[^1] 			{ ; }
 <COMMENT1>{end_comment}	{ fprintf(stderr, " {COMMENT}"); BEGIN INITIAL; }
 
  /* tokens */

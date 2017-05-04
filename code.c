@@ -5,9 +5,6 @@
 #include "code.h"
 #include "externs.h"
 
-int current_byte = 0;
-
-
 /* Print this code at the start of the assembly file */
 void file_header(char* filename)
 {
@@ -25,7 +22,7 @@ void add_io_code()
 	fprintf(outfile, ".LC0: # reading\n");
 	fprintf(outfile, "\t.string \"%%c\"\n");
 	fprintf(outfile, ".LC1: # writing\n");
-	fprintf(outfile, "\t.string \"%%c\\n\"\n");
+	fprintf(outfile, "\t.string \"%%c\"\n");
 	fprintf(outfile, "\t.text\n\n\n");
 }
 
@@ -57,6 +54,7 @@ void main_header()
 	fprintf(outfile, "\tpush\t0\n");
 	fprintf(outfile, "\tcmp\t\tr8, 0\n");
 	fprintf(outfile, "\tjne\t\t.L0\n");
+	fprintf(outfile, "\tmov\t\tr15, rsp\n");
 
 	if (CODE_DEBUG) fprintf(outfile, "\t# end function header\n");
 
@@ -79,10 +77,7 @@ void main_footer()
 void add()
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# add\n");
-	if(current_byte == 0)
-		fprintf(outfile, "\tadd\t\tBYTE PTR [rsp], 1\n");
-	else
-		fprintf(outfile, "\tadd\tBYTE PTR [rsp+%d], 1\n", current_byte);
+	fprintf(outfile, "\tincb\t\t[r15]\n");
 }
 
 
@@ -90,10 +85,7 @@ void add()
 void sub()
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# sub\n");
-	if(current_byte == 0)
-		fprintf(outfile, "\tsub\t\tBYTE PTR [rsp], 1\n");
-	else
-		fprintf(outfile, "\tsub\tBYTE PTR [rsp+%d], 1\n", current_byte);
+	fprintf(outfile, "\tdecb\t\t[r15]\n");
 }
 
 
@@ -101,7 +93,7 @@ void sub()
 void move_right()
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# move right\n");
-	current_byte++;
+	fprintf(outfile, "\tlea\t\tr15, [r15+1]\n");
 }
 
 
@@ -109,7 +101,7 @@ void move_right()
 void move_left()
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# move left\n");
-	current_byte--;
+	fprintf(outfile, "\tlea\t\tr15, [r15-1]\n");
 }
 
 
@@ -117,11 +109,8 @@ void move_left()
 void write()
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# write\n");
-	if(current_byte == 0)
-		fprintf(outfile, "\tmovzx\teax, BYTE PTR [rsp]\n");
-	else
-		fprintf(outfile, "\tmovzx\teax, BYTE PTR [rsp+%d]\n", current_byte);
-	fprintf(outfile, "\tmovsx\tedx, al\n");
+	fprintf(outfile, "\tmov bl, [r15]\n");
+	fprintf(outfile, "\tmovsx\tedx, bl\n");
 	fprintf(outfile, "\tmov\t\trax, QWORD PTR stderr[rip]\n");
 	fprintf(outfile, "\tmov\t\tesi, OFFSET FLAT:.LC1\n");
 	fprintf(outfile, "\tmov\t\trdi, rax\n");
@@ -137,10 +126,7 @@ void read()
 	fprintf(outfile, "\tmov\t\trax, QWORD PTR fs:40\n");
 	fprintf(outfile, "\txor\t\teax, eax\n");
 	fprintf(outfile, "\tmov\t\trax, QWORD PTR stdin[rip]\n");
-	if(current_byte == 0)
-		fprintf(outfile, "\tlea\t\trdx, [rsp]\n");
-	else
-		fprintf(outfile, "\tlea\t\trdx, [rsp+%d]\n", current_byte);
+	fprintf(outfile, "\tlea\t\trdx, [r15]\n");
 	fprintf(outfile, "\tmov\t\tesi, OFFSET FLAT:.LC0\n");
 	fprintf(outfile, "\tmov\t\trdi, rax\n");
 	fprintf(outfile, "\tmov\t\teax, 0\n");
@@ -152,7 +138,8 @@ void start_loop(int l)
 {
 	if (CODE_DEBUG) fprintf(outfile, "\n# start loop\n");
 	fprintf(outfile, ".L%d:\n", l);
-	fprintf(outfile, "\tcmp\t\tBYTE PTR [rsp+%d], 0\n", current_byte);
+	fprintf(outfile, "\tmov bl, [r15]\n");
+	fprintf(outfile, "\tcmp\t\tbl, 0\n");
 	fprintf(outfile, "\tje\t\t.L%d\n", l+1);
 }
 

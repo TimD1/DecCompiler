@@ -39,7 +39,6 @@ int main(int argc, char** argv)
 	file_header(argv[1]);
 	add_io_code();
 	main_header();
-	fprintf( stderr, "%d ", yylineno );
 	do { yyparse(); }
 		while (!feof(yyin));
 	main_footer();

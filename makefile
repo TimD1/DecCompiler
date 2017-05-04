@@ -10,11 +10,11 @@ y.tab.o: y.tab.c
 lex.yy.o: lex.yy.c
 	gcc -g -c lex.yy.c
 
-y.tab.c: hexed.y
-	yacc -dv hexed.y
+y.tab.c: dec.y
+	yacc -dv dec.y
 
-lex.yy.c: hexed.l
-	lex -l hexed.l
+lex.yy.c: dec.l
+	lex -l dec.l
 
 clean:
 	rm -f *.o compiler y.tab.c lex.yy.c y.tab.h y.output

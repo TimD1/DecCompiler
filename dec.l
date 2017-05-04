@@ -6,6 +6,7 @@
 #include "y.tab.h"
 
 int label = 1;
+char prev = 0;
 
 %}
 
@@ -32,9 +33,21 @@ endline			[\r\n]
 %%
 
  /* detect comment states */
-{start_comment}			{ BEGIN COMMENT1; }
-<COMMENT1>[^1] 			{ ; }
-<COMMENT1>{end_comment}	{ fprintf(stderr, " {COMMENT}"); BEGIN INITIAL; }
+{start_comment}			{
+							BEGIN COMMENT1;
+							fprintf(stderr, " {COMMENT:");
+						}
+<COMMENT1>[^1] 			{
+							if(prev)
+							{
+								fprintf(stderr, "%c", 
+									(char)((prev-'0')*10 + (yytext[0]-'0')));
+								prev = 0;
+							}
+							else
+								prev = yytext[0];
+						}
+<COMMENT1>{end_comment}	{ fprintf(stderr, "}\n"); BEGIN INITIAL; }
 
  /* tokens */
 {right}			{
